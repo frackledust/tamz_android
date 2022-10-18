@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Savings</string>
+    <string name="magic_number">Magic % number</string>
+    <string name="length_of_your_patience">Length of your patience</string>
+    <string name="money_you_give_them">Money you give Them</string>
+    <string name="button">Tell me</string>
+</resources>
