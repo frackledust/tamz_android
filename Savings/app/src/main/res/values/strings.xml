@@ -4,4 +4,9 @@
     <string name="length_of_your_patience">Length of your patience</string>
     <string name="money_you_give_them">Money you give Them</string>
     <string name="button">Tell me</string>
+    <string name="about">
+        Author: Pavlína Smolkova\n
+        Login: SMO0117\n
+        Version: 1.1\n
+    </string>
 </resources>

@@ -3,11 +3,16 @@ package com.example.savings;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.data.PieData;
@@ -27,6 +32,10 @@ public class MainActivity extends AppCompatActivity {
 
     PieChart pie;
 
+    Intent about_intent;
+    Intent history_intent;
+    Intent settings_intent;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,6 +47,37 @@ public class MainActivity extends AppCompatActivity {
         result = findViewById(R.id.textView);
 
         pie = findViewById(R.id.pie_chart);
+
+        about_intent = new Intent(this, AboutActivity.class);
+        history_intent = new Intent(this, HistoryActivity.class);
+        settings_intent = new Intent(this, SettingsActivity.class);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.my_menu, menu);
+        return true;
+    }
+
+    @SuppressLint("NonConstantResourceId")
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.about:
+                Toast.makeText(this, "About", Toast.LENGTH_SHORT).show();
+                startActivity(about_intent);
+                return true;
+            case R.id.history:
+                Toast.makeText(this, "History", Toast.LENGTH_SHORT).show();
+                startActivity(history_intent);
+            case R.id.settings:
+                Toast.makeText(this, "Settings", Toast.LENGTH_SHORT).show();
+                startActivity(settings_intent);
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @SuppressLint("SetTextI18n")
@@ -48,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
         pie.setEntryLabelColor(Color.BLACK);
         pie.getDescription().setEnabled(false);
         pie.getLegend().setEnabled(false);
+        pie.setEntryLabelTextSize(15f);
         ArrayList<PieEntry> entries = new ArrayList<>();
 
         double money_num = Double.parseDouble("0" + money.getText().toString());
@@ -65,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
 
         dataSet.setColors(ColorTemplate.LIBERTY_COLORS);
         data.setDrawValues(true);
+        data.setValueTextSize(10f);
 
 
         pie.setData(data);
