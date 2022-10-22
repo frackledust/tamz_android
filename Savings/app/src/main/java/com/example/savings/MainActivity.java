@@ -16,29 +16,36 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
-import com.github.mikephil.charting.formatter.PercentFormatter;
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final int SETTINGS_ACTIVITY_REQUEST_CODE = 1;
     EditText money;
     EditText percentage;
     EditText time;
     TextView result;
 
     PieChart pie;
+    BarChart barChart;
 
-    Intent about_intent;
-    Intent history_intent;
-    Intent settings_intent;
+    Intent aboutIntent;
+    Intent historyIntent;
+    Intent settingsIntent;
 
-    int[] colors = ColorTemplate.LIBERTY_COLORS;
+    int graphType = SettingsActivity.PIE_TYPE;
 
     SharedPreferences pref;
 
@@ -53,10 +60,11 @@ public class MainActivity extends AppCompatActivity {
         result = findViewById(R.id.textView);
 
         pie = findViewById(R.id.pie_chart);
+        barChart = findViewById(R.id.barChart_view);
 
-        about_intent = new Intent(this, AboutActivity.class);
-        history_intent = new Intent(this, HistoryActivity.class);
-        settings_intent = new Intent(this, SettingsActivity.class);
+        aboutIntent = new Intent(this, AboutActivity.class);
+        historyIntent = new Intent(this, HistoryActivity.class);
+        settingsIntent = new Intent(this, SettingsActivity.class);
 
         pref = this.getSharedPreferences("DATA", Context.MODE_PRIVATE);
     }
@@ -70,19 +78,24 @@ public class MainActivity extends AppCompatActivity {
         time.setText(pref.getString("K_time", ""));
     }
 
-//    @Override
-//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-//        super.onActivityResult(requestCode, resultCode, data);
-//
-//        int SECOND_ACTIVITY_REQUEST_CODE = 1;
-//        if (requestCode == SECOND_ACTIVITY_REQUEST_CODE) {
-//            if(resultCode == RESULT_OK){
-//                String result=data.getStringExtra("result");
-//
-//                Toast.makeText(this, result, Toast.LENGTH_SHORT).show();
-//            }
-//        }
-//    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(resultCode == RESULT_OK){
+            graphType = data.getIntExtra("K_graphType", 0);
+
+            pie.setVisibility(View.GONE);
+            barChart.setVisibility(View.GONE);
+
+            if(graphType == SettingsActivity.PIE_TYPE){
+                pie.setVisibility(View.VISIBLE);
+            }
+            else{
+                barChart.setVisibility(View.VISIBLE);
+            }
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -98,15 +111,15 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.about:
                 Toast.makeText(this, "About", Toast.LENGTH_SHORT).show();
-                startActivity(about_intent);
+                startActivity(aboutIntent);
                 return true;
             case R.id.history:
                 Toast.makeText(this, "History", Toast.LENGTH_SHORT).show();
-                startActivity(history_intent);
+                startActivity(historyIntent);
                 return true;
             case R.id.settings:
                 Toast.makeText(this, "Settings", Toast.LENGTH_SHORT).show();
-                startActivity(settings_intent);
+                startActivityForResult(settingsIntent, SETTINGS_ACTIVITY_REQUEST_CODE);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -137,8 +150,12 @@ public class MainActivity extends AppCompatActivity {
                 " Result: " + result_num + "\n";
         pref.edit().putString("K_history", history_text).apply();
 
-        createPieChart(earn_num, Math.round(money_num));
-
+        if(graphType == SettingsActivity.PIE_TYPE){
+            createPieChart(earn_num, Math.round(money_num));
+        }
+        else{
+            createBarChart(earn_num, result_num);
+        }
     }
 
     private void createPieChart(long earn_num, long money_num){
@@ -148,6 +165,7 @@ public class MainActivity extends AppCompatActivity {
         pie.getDescription().setEnabled(false);
         pie.getLegend().setEnabled(false);
         pie.setEntryLabelTextSize(15f);
+
         ArrayList<PieEntry> entries = new ArrayList<>();
 
         entries.add(new PieEntry(earn_num, "New Money"));
@@ -164,5 +182,30 @@ public class MainActivity extends AppCompatActivity {
 
         pie.setData(data);
         pie.invalidate();
+    }
+
+    private void createBarChart(long earn_num, long total){
+        barChart.getDescription().setEnabled(false);
+        barChart.getAxisLeft().setTextColor(Color.WHITE);
+        barChart.getXAxis().setTextColor(Color.WHITE);
+        barChart.getAxisRight().setDrawLabels(false);
+
+        final String[] labels = new String[] {"Earn", "Total"};
+        barChart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(labels));
+        barChart.getXAxis().setGranularity(1f);
+        barChart.getXAxis().setGranularityEnabled(true);
+
+        ArrayList<BarEntry> entries = new ArrayList<>();
+
+        entries.add(new BarEntry(0, earn_num));
+        entries.add(new BarEntry(1, total));
+
+        BarDataSet barDataSet = new BarDataSet(entries, "");
+        barDataSet.setColors(ColorTemplate.JOYFUL_COLORS);
+        barDataSet.setValueTextColors(Collections.singletonList(Color.WHITE));
+
+        BarData data = new BarData(barDataSet);
+        barChart.setData(data);
+        barChart.invalidate();
     }
 }
