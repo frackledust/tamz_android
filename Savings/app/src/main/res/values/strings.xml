@@ -9,4 +9,7 @@
         Login: SMO0117\n
         Version: 1.1\n
     </string>
+    <string name="historyText">History:</string>
+    <string name="settingsText">Settings</string>
+    <string name="clear">Clear</string>
 </resources>

@@ -3,7 +3,9 @@ package com.example.savings;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
@@ -36,6 +38,10 @@ public class MainActivity extends AppCompatActivity {
     Intent history_intent;
     Intent settings_intent;
 
+    int[] colors = ColorTemplate.LIBERTY_COLORS;
+
+    SharedPreferences pref;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,7 +57,32 @@ public class MainActivity extends AppCompatActivity {
         about_intent = new Intent(this, AboutActivity.class);
         history_intent = new Intent(this, HistoryActivity.class);
         settings_intent = new Intent(this, SettingsActivity.class);
+
+        pref = this.getSharedPreferences("DATA", Context.MODE_PRIVATE);
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        money.setText(pref.getString("K_money", ""));
+        percentage.setText(pref.getString("K_perc", ""));
+        time.setText(pref.getString("K_time", ""));
+    }
+
+//    @Override
+//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+//
+//        int SECOND_ACTIVITY_REQUEST_CODE = 1;
+//        if (requestCode == SECOND_ACTIVITY_REQUEST_CODE) {
+//            if(resultCode == RESULT_OK){
+//                String result=data.getStringExtra("result");
+//
+//                Toast.makeText(this, result, Toast.LENGTH_SHORT).show();
+//            }
+//        }
+//    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -72,9 +103,11 @@ public class MainActivity extends AppCompatActivity {
             case R.id.history:
                 Toast.makeText(this, "History", Toast.LENGTH_SHORT).show();
                 startActivity(history_intent);
+                return true;
             case R.id.settings:
                 Toast.makeText(this, "Settings", Toast.LENGTH_SHORT).show();
                 startActivity(settings_intent);
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -83,13 +116,10 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("SetTextI18n")
     public void calculate(View view) {
 
-        pie.setDrawHoleEnabled(false);
-        pie.setUsePercentValues(true);
-        pie.setEntryLabelColor(Color.BLACK);
-        pie.getDescription().setEnabled(false);
-        pie.getLegend().setEnabled(false);
-        pie.setEntryLabelTextSize(15f);
-        ArrayList<PieEntry> entries = new ArrayList<>();
+        pref.edit().putString("K_money", money.getText().toString()).apply();
+        pref.edit().putString("K_perc", percentage.getText().toString()).apply();
+        pref.edit().putString("K_time", time.getText().toString()).apply();
+
 
         double money_num = Double.parseDouble("0" + money.getText().toString());
         double percentage_num = Double.parseDouble("0" + percentage.getText().toString());
@@ -99,9 +129,32 @@ public class MainActivity extends AppCompatActivity {
         long earn_num = Math.round(result_num - money_num);
         result.setText("You get " + result_num + " and earn " + earn_num);
 
+        String history_text = pref.getString("K_history", "");
+        history_text +=
+                "Deposit: " + money_num +
+                " Perc: " + percentage_num +
+                " Time: " + time_num +
+                " Result: " + result_num + "\n";
+        pref.edit().putString("K_history", history_text).apply();
+
+        createPieChart(earn_num, Math.round(money_num));
+
+    }
+
+    private void createPieChart(long earn_num, long money_num){
+        pie.setDrawHoleEnabled(false);
+        pie.setUsePercentValues(true);
+        pie.setEntryLabelColor(Color.BLACK);
+        pie.getDescription().setEnabled(false);
+        pie.getLegend().setEnabled(false);
+        pie.setEntryLabelTextSize(15f);
+        ArrayList<PieEntry> entries = new ArrayList<>();
+
         entries.add(new PieEntry(earn_num, "New Money"));
-        entries.add(new PieEntry(Math.round(money_num), "Old Money"));
+        entries.add(new PieEntry(money_num, "Old Money"));
+
         PieDataSet dataSet = new PieDataSet(entries, "");
+
         PieData data = new PieData(dataSet);
 
         dataSet.setColors(ColorTemplate.LIBERTY_COLORS);
