@@ -11,50 +11,48 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+
 /**
  * Created by kru13 on 12.10.16.
  */
 
 
 public class SokoView extends View {
+    static int current_index = 0;
+    static ArrayList<String> names = new ArrayList<>();
+    static ArrayList<String> levelData = new ArrayList<>();
+
     int FLOOR = 0;
     int WALL = 1;
     int BOX = 2;
     int GOAL = 3;
     int HERO = 4;
     int BOXOK = 5;
+    int HEROOK = 6;
 
     Bitmap[] bmp;
 
     int box_count = 0;
     int boxok_count = 0;
 
-    int lx = 10;
-    int ly = 10;
+    int lx, ly;
 
-    int hero_x;
-    int hero_y;
+    int hero_x, hero_y;
 
-    float finger_x;
-    float finger_y;
+    float finger_x, finger_y;
 
     int box_width;
     int box_height;
 
-    private final int[] boxes = new int[lx * ly];
+    private int[] level;
 
-    private final int[] level = {
-            1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
-            1, 0, 0, 0, 0, 0, 0, 0, 1, 0,
-            1, 0, 2, 3, 3, 2, 1, 0, 1, 0,
-            1, 0, 1, 3, 2, 3, 2, 0, 1, 0,
-            1, 0, 2, 3, 3, 2, 4, 0, 1, 0,
-            1, 0, 1, 3, 2, 3, 2, 0, 1, 0,
-            1, 0, 2, 3, 3, 2, 1, 0, 1, 0,
-            1, 0, 0, 0, 0, 0, 0, 0, 1, 0,
-            1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    };
+    private int[] boxes;
+
+    private int[] backup;
 
     public SokoView(Context context) {
         super(context);
@@ -71,9 +69,14 @@ public class SokoView extends View {
         init();
     }
 
+    public void reset() {
+        level = backup.clone();
+        game_set_up();
+        invalidate();
+    }
+
     void init() {
         bmp = new Bitmap[6];
-
 
         bmp[0] = BitmapFactory.decodeResource(getResources(), R.drawable.empty);
         bmp[1] = BitmapFactory.decodeResource(getResources(), R.drawable.wall);
@@ -81,23 +84,73 @@ public class SokoView extends View {
         bmp[3] = BitmapFactory.decodeResource(getResources(), R.drawable.goal);
         bmp[4] = BitmapFactory.decodeResource(getResources(), R.drawable.hero);
         bmp[5] = BitmapFactory.decodeResource(getResources(), R.drawable.boxok);
+    }
 
+    public void load(int index) {
+        current_index = index;
+        String text = levelData.get(index);
+        String[] lines_old = text.split("\n", 0);
+        String[] lines = Arrays.copyOfRange(lines_old, 1, lines_old.length);
+        lx = lines.length;
+        ly = lines[0].length();
+        for(String line : lines){
+            ly = Math.max(ly, line.length());
+        }
+
+        backup = new int[lx * ly];
+        for(int x = 0; x < lines.length; x++){
+            String line = lines[x];
+            for(int y = 0; y < line.length(); y++){
+                backup[pos(x, y)] = char_to_int(line.charAt(y));
+            }
+        }
+
+        boxes = new int[lx * ly];
+        level = backup.clone();
         game_set_up();
+
+        box_width = getWidth() / ly;
+        box_height = getHeight() / lx;
+    }
+
+    private int char_to_int(char charAt) {
+        if(charAt == ' ') return FLOOR;
+        if(charAt == '#') return WALL;
+        if(charAt == '.') return GOAL;
+        if(charAt == '$') return BOX;
+        if(charAt == '*') return BOXOK;
+        if(charAt == '@') return HERO;
+        if(charAt == '+') return HEROOK;
+        return FLOOR;
     }
 
     void game_set_up() {
+        box_count = 0;
+        boxok_count = 0;
+
         for (int x = 0; x < lx; x++) {
             for (int y = 0; y < ly; y++) {
-                boxes[pos(x, y)] = FLOOR;
-
-                if (level[pos(x, y)] == HERO) {
+                int c = backup[pos(x, y)];
+                if (c == HERO) {
                     hero_x = x;
                     hero_y = y;
                     level[pos(x, y)] = FLOOR;
-                } else if (level[pos(x, y)] == BOX) {
-                    level[pos(x, y)] = FLOOR;
+
+                } else if (c == HEROOK){
+                    hero_x = x;
+                    hero_y = y;
+                    level[pos(x, y)] = GOAL;
+                }
+                else if (c == BOX) {
                     boxes[pos(x, y)] = BOX;
+                    level[pos(x, y)] = FLOOR;
                     box_count++;
+                }
+                else if(c == BOXOK){
+                    boxes[pos(x, y)] = BOX;
+                    level[pos(x, y)] = GOAL;
+                    box_count++;
+                    boxok_count++;
                 }
             }
         }
@@ -116,10 +169,20 @@ public class SokoView extends View {
                 }
             }
         }
+
         if (new_boxok_count != boxok_count) {
             boxok_count = new_boxok_count;
             int left = box_count - boxok_count;
-            Toast.makeText(getContext(), left + " boxes left", Toast.LENGTH_SHORT).show();
+            if(left == 0){
+                Toast.makeText(getContext(), "LEVEL COMPLETED", Toast.LENGTH_LONG).show();
+                if(current_index < levelData.size() - 1){
+                    current_index++;
+                    load(current_index);
+                }
+            }
+            else{
+                Toast.makeText(getContext(), left + " boxes left", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -129,10 +192,7 @@ public class SokoView extends View {
 
         if (level[pos(next_pos_x, next_pos_y)] == WALL) return false;
 
-        if (boxes[pos(next_pos_x, next_pos_y)] == BOX) {
-
-            if (!move_box(next_pos_x, next_pos_y, x, y)) return false;
-        }
+        if (boxes[pos(next_pos_x, next_pos_y)] == BOX) return false;
 
         boxes[pos(next_pos_x, next_pos_y)] = BOX;
         boxes[pos(new_x, new_y)] = FLOOR;
