@@ -70,7 +70,6 @@ public class SokoView extends View {
     }
 
     public void reset() {
-        level = backup.clone();
         game_set_up();
         invalidate();
     }
@@ -105,12 +104,11 @@ public class SokoView extends View {
             }
         }
 
-        boxes = new int[lx * ly];
-        level = backup.clone();
         game_set_up();
 
         box_width = getWidth() / ly;
         box_height = getHeight() / lx;
+        invalidate();
     }
 
     private int char_to_int(char charAt) {
@@ -125,6 +123,9 @@ public class SokoView extends View {
     }
 
     void game_set_up() {
+        boxes = new int[lx * ly];
+        level = backup.clone();
+
         box_count = 0;
         boxok_count = 0;
 
@@ -160,7 +161,7 @@ public class SokoView extends View {
         return x * ly + y;
     }
 
-    private void check_count() {
+    private boolean check_count() {
         int new_boxok_count = 0;
         for (int x = 0; x < lx; x++) {
             for (int y = 0; y < ly; y++) {
@@ -178,12 +179,15 @@ public class SokoView extends View {
                 if(current_index < levelData.size() - 1){
                     current_index++;
                     load(current_index);
+                    return true;
                 }
             }
             else{
                 Toast.makeText(getContext(), left + " boxes left", Toast.LENGTH_SHORT).show();
             }
         }
+
+        return false;
     }
 
     private boolean move_box(int new_x, int new_y, int x, int y) {
@@ -209,7 +213,7 @@ public class SokoView extends View {
 
             if (!move_box(new_hero_x, new_hero_y, x, y)) return;
 
-            check_count();
+            if(check_count()) return;
         }
 
         hero_x = new_hero_x;

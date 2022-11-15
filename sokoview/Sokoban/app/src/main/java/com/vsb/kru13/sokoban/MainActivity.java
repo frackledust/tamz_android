@@ -3,26 +3,24 @@ package com.vsb.kru13.sokoban;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.res.AssetManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
-
-    private static final int LEVELS_ACTIVITY_REQUEST_CODE = 1;
 
     SokoView sokoView;
 
     Intent levelsIntent;
+    Intent levelsRIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +30,16 @@ public class MainActivity extends AppCompatActivity {
         sokoView = findViewById(R.id.sokoView);
 
         levelsIntent = new Intent(this, LevelsActivity.class);
+        levelsRIntent = new Intent(this, LevelsRecycledActivity.class);
+        MyDatabase dbHelper = new MyDatabase(this);
 
+
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        dbHelper.drop();
+        loadFile(db);
+    }
+
+    public void loadFile(SQLiteDatabase db){
         InputStream input;
         try {
             AssetManager assetManager = getAssets();
@@ -48,12 +55,18 @@ public class MainActivity extends AppCompatActivity {
             text = text.replace("\r\n", "\n");
             String[] lines = text.split("\n\n", 0);
 
-            for(String line : lines){
+            for (String line : lines) {
                 String[] data = line.split("\'", 0);
-                if(data.length == 3){
-                    if(!SokoView.levelData.contains(data[2])){
+                if (data.length == 3) {
+                    if (!SokoView.levelData.contains(data[2])) {
                         SokoView.names.add(data[1]);
                         SokoView.levelData.add(data[2]);
+
+                        ContentValues values = new ContentValues();
+                        values.put(MyDatabase.COLUMN_TITLE, data[1]);
+                        values.put(MyDatabase.COLUMN_MIN_MOVES, "closed");
+                        values.put(MyDatabase.COLUMN_DATA, data[2]);
+                        db.insert(MyDatabase.TABLE_NAME, null, values);
                     }
                 }
             }
@@ -80,7 +93,9 @@ public class MainActivity extends AppCompatActivity {
                 sokoView.reset();
                 return true;
             case R.id.levels:
-                startActivityForResult(levelsIntent, LEVELS_ACTIVITY_REQUEST_CODE);
+//                startActivityForResult(levelsIntent, 1);
+                startActivityForResult(levelsRIntent, 1);
+//                startActivity();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -91,10 +106,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if(resultCode == RESULT_OK){
-            String name = data.getStringExtra("LevelName");
-            int i = SokoView.names.indexOf(name);
-            sokoView.load(i);
+        if (resultCode == RESULT_OK) {
+            int i = Integer.parseInt(data.getStringExtra("level_id"));
+            sokoView.load(i - 1);
         }
     }
 }
