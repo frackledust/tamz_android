@@ -32,6 +32,7 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
     public class MyViewHolder extends RecyclerView.ViewHolder{
 
         TextView level_id_text, level_title_text, level_moves_text;
+        ShowView soko;
         public CardView cardView;
 
         public MyViewHolder(@NonNull View itemView) {
@@ -40,6 +41,7 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
             level_title_text = itemView.findViewById(R.id.text_title);
             level_moves_text = itemView.findViewById(R.id.text_moves);
             cardView = itemView.findViewById(R.id.card_view);
+            soko = itemView.findViewById(R.id.showView2);
         }
     }
 
@@ -56,6 +58,7 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
         holder.level_id_text.setText(String.valueOf(level_id.get(position)));
         holder.level_title_text.setText(String.valueOf(level_title.get(position)));
         holder.level_moves_text.setText(String.valueOf(level_moves.get(position)));
+        holder.soko.load(String.valueOf(level_data.get(position)));
 
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override

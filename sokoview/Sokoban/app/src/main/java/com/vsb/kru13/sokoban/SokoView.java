@@ -2,6 +2,7 @@ package com.vsb.kru13.sokoban;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -15,7 +16,6 @@ import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-
 /**
  * Created by kru13 on 12.10.16.
  */
@@ -33,6 +33,8 @@ public class SokoView extends View {
     int HERO = 4;
     int BOXOK = 5;
     int HEROOK = 6;
+
+    int move_count = 0;
 
     Bitmap[] bmp;
 
@@ -72,6 +74,67 @@ public class SokoView extends View {
     public void reset() {
         game_set_up();
         invalidate();
+    }
+
+    public void load_last(){
+        SharedPreferences pref = getContext().getSharedPreferences("DATA", Context.MODE_PRIVATE);
+        current_index = pref.getInt("D_current_index", 0);
+        move_count = pref.getInt("D_move_count", 0);
+        box_count = pref.getInt("D_box_count", 0);
+        boxok_count =  pref.getInt("D_boxok_count", 0);
+        lx =  pref.getInt("D_lx", 0);
+        ly =  pref.getInt("D_ly", 0);
+        hero_x = pref.getInt("D_hero_x", 0);
+        hero_y = pref.getInt("D_hero_y", 0);
+
+        backup = new int[lx * ly];
+        level = backup.clone();
+        boxes = backup.clone();
+
+        string_to_arr("D_level", level);
+        string_to_arr("D_boxes", boxes);
+        string_to_arr("D_backup", backup);
+
+        box_width = getWidth() / ly;
+        box_height = getHeight() / lx;
+        invalidate();
+
+        Toast.makeText(getContext(), "LOADED", Toast.LENGTH_SHORT).show();
+    }
+
+    public void save(){
+        SharedPreferences pref = getContext().getSharedPreferences("DATA", Context.MODE_PRIVATE);
+        int i = pref.getInt("D_current_index", 0);
+
+        pref.edit().putInt("D_current_index", current_index).apply();
+        pref.edit().putInt("D_move_count", move_count).apply();
+        pref.edit().putInt("D_box_count", box_count).apply();
+        pref.edit().putInt("D_boxok_count", boxok_count).apply();
+        pref.edit().putInt("D_lx", lx).apply();
+        pref.edit().putInt("D_ly", ly).apply();
+        pref.edit().putInt("D_hero_x", hero_x).apply();
+        pref.edit().putInt("D_hero_y", hero_y).apply();
+        pref.edit().putString("D_level", arr_to_string(level)).apply();
+        pref.edit().putString("D_boxes", arr_to_string(boxes)).apply();
+        pref.edit().putString("D_backup", arr_to_string(backup)).apply();
+
+        Toast.makeText(getContext(), "SAVED", Toast.LENGTH_SHORT).show();
+    }
+
+    String arr_to_string(int [] arr){
+        StringBuilder stringBuilder = new StringBuilder();
+        for(int i = 0; i < arr.length; i++){
+            stringBuilder.append(arr[i]);
+        }
+        return stringBuilder.toString();
+    }
+
+    private void string_to_arr(String name, int [] arr) {
+        SharedPreferences pref = getContext().getSharedPreferences("DATA", Context.MODE_PRIVATE);
+        String data = pref.getString(name, "");
+        for(int i = 0; i < arr.length; i++){
+            arr[i] = Character.getNumericValue(data.charAt(i));
+        }
     }
 
     void init() {
@@ -123,6 +186,8 @@ public class SokoView extends View {
     }
 
     void game_set_up() {
+        move_count = 0;
+
         boxes = new int[lx * ly];
         level = backup.clone();
 
@@ -176,11 +241,9 @@ public class SokoView extends View {
             int left = box_count - boxok_count;
             if(left == 0){
                 Toast.makeText(getContext(), "LEVEL COMPLETED", Toast.LENGTH_LONG).show();
-                if(current_index < levelData.size() - 1){
-                    current_index++;
-                    load(current_index);
-                    return true;
-                }
+                game_won();
+                load(current_index);
+                return true;
             }
             else{
                 Toast.makeText(getContext(), left + " boxes left", Toast.LENGTH_SHORT).show();
@@ -188,6 +251,20 @@ public class SokoView extends View {
         }
 
         return false;
+    }
+
+    private void game_won(){
+        MyDatabase db = new MyDatabase(getContext());
+        String level_id = String.valueOf(current_index + 1);
+        int minMoves = Integer.parseInt(db.getMoves(level_id));
+
+        if(minMoves == 0 || minMoves > move_count){
+            int c = db.setMoves(level_id, String.valueOf(move_count));
+        }
+
+        if(current_index < levelData.size() - 1){
+            current_index++;
+        }
     }
 
     private boolean move_box(int new_x, int new_y, int x, int y) {
@@ -204,6 +281,7 @@ public class SokoView extends View {
     }
 
     private void move(int x, int y) {
+        move_count++;
         int new_hero_x = hero_x + x;
         int new_hero_y = hero_y + y;
 

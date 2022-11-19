@@ -6,6 +6,7 @@ import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.res.AssetManager;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.Menu;
@@ -33,13 +34,27 @@ public class MainActivity extends AppCompatActivity {
         levelsRIntent = new Intent(this, LevelsRecycledActivity.class);
         MyDatabase dbHelper = new MyDatabase(this);
 
+        Cursor c = dbHelper.readAllData();
+        if(c.getCount() == 0){
+            SQLiteDatabase db = dbHelper.getWritableDatabase();
+            loadfromFile(db);
+        }
+        else{
+            loadfromDB(c);
+            int i = 2;
+        }
 
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        dbHelper.drop();
-        loadFile(db);
+        sokoView.load(SokoView.current_index);
     }
 
-    public void loadFile(SQLiteDatabase db){
+    private void loadfromDB(Cursor c) {
+        while(c.moveToNext()){
+            SokoView.names.add(c.getString(1));
+            SokoView.levelData.add(c.getString(2));
+        }
+    }
+
+    public void loadfromFile(SQLiteDatabase db){
         InputStream input;
         try {
             AssetManager assetManager = getAssets();
@@ -64,14 +79,12 @@ public class MainActivity extends AppCompatActivity {
 
                         ContentValues values = new ContentValues();
                         values.put(MyDatabase.COLUMN_TITLE, data[1]);
-                        values.put(MyDatabase.COLUMN_MIN_MOVES, "closed");
+                        values.put(MyDatabase.COLUMN_MIN_MOVES, "0");
                         values.put(MyDatabase.COLUMN_DATA, data[2]);
                         db.insert(MyDatabase.TABLE_NAME, null, values);
                     }
                 }
             }
-
-            sokoView.load(SokoView.current_index);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -93,9 +106,13 @@ public class MainActivity extends AppCompatActivity {
                 sokoView.reset();
                 return true;
             case R.id.levels:
-//                startActivityForResult(levelsIntent, 1);
                 startActivityForResult(levelsRIntent, 1);
-//                startActivity();
+                return true;
+            case R.id.save:
+                sokoView.save();
+                return true;
+            case R.id.load_last:
+                sokoView.load_last();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

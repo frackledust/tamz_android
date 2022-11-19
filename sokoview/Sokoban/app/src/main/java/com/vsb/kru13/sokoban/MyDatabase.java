@@ -1,5 +1,6 @@
 package com.vsb.kru13.sokoban;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -58,5 +59,43 @@ public class MyDatabase extends SQLiteOpenHelper {
         String query = "SELECT * FROM " + TABLE_NAME;
         SQLiteDatabase db = this.getReadableDatabase();
         return db.rawQuery(query, null);
+    }
+
+    public String getMoves(String level_id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String[] projection = {
+                COLUMN_MIN_MOVES
+        };
+        String selection = COLUMN_ID + " = ?";
+        String[] selectionArgs = { level_id };
+
+        Cursor cursor = db.query(
+                TABLE_NAME,             // The table to query
+                projection,             // The array of columns to return (pass null to get all)
+                selection,              // The columns for the WHERE clause
+                selectionArgs,          // The values for the WHERE clause
+                null,                   // don't group the rows
+                null,                   // don't filter by row groups
+                null                    // The sort order
+        );
+
+        if(cursor.moveToNext()) {
+            return cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MIN_MOVES));
+        }
+        return "0";
+    }
+
+    public int setMoves(String level_id, String moves) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_MIN_MOVES, moves);
+        String selection = COLUMN_ID + " = ?";
+        String[] selectionArgs = { level_id };
+
+        return db.update(
+                TABLE_NAME,
+                values,
+                selection,
+                selectionArgs);
     }
 }

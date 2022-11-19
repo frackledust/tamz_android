@@ -46,8 +46,8 @@ public class LevelsRecycledActivity extends AppCompatActivity {
             while(cursor.moveToNext()){
                 level_id.add(cursor.getString(0));
                 level_title.add(cursor.getString(1));
-                level_moves.add(cursor.getString(2));
-                level_data.add(cursor.getString(3));
+                level_data.add(cursor.getString(2));
+                level_moves.add(cursor.getString(3));
             }
         }
     }
