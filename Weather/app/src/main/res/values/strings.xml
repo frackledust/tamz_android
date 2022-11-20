@@ -4,4 +4,12 @@
     <string name="name">Name</string>
     <string name="icon">icon</string>
     <string name="description">Description</string>
+    <string name="show_forecast">Show forecast</string>
+    <string name="icon_text">Icon</string>
+    <string name="time">Time</string>
+    <string name="descriptionRow">Description</string>
+    <string name="degreesRow">Temperature</string>
+    <string name="temperature">Temperature</string>
+    <string name="tempMain">-</string>
+    <string name="descMain">-</string>
 </resources>

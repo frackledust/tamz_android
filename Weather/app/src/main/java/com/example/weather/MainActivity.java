@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -14,6 +15,9 @@ import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static String cityName;
+
+    @SuppressWarnings("deprecation")
     @SuppressLint("HandlerLeak")
     Handler handler = new Handler(){
 
@@ -29,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
             TextView descView = findViewById(R.id.descText);
             ImageView iconView = findViewById(R.id.imageView);
 
-            tempView.setText(String.valueOf(temperature) + " °C");
+            tempView.setText(temperature + " °C");
             descView.setText(description);
 
             int id = getResources().getIdentifier(icon, "drawable", getPackageName());
@@ -45,11 +49,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        String city = "Ostrava";
+        cityName = "Ostrava";
         TextView tw = findViewById(R.id.cityTextBox);
-        tw.setText(city);
+        tw.setText(cityName);
 
-        Connector con = new Connector(handler, city);
+        Connector con = new Connector(handler, cityName);
         con.start();
     }
 
@@ -57,8 +61,14 @@ public class MainActivity extends AppCompatActivity {
         TextView tw = findViewById(R.id.cityTextBox);
         String city = String.valueOf(tw.getText());
         if(city.length() > 0){
-            Connector con = new Connector(handler, city);
+            cityName = city;
+            Connector con = new Connector(handler, cityName);
             con.start();
         }
+    }
+
+    public void showForecast(View view) {
+        Intent forecastIntent = new Intent(this, ForecastActivity.class);
+        startActivity(forecastIntent);
     }
 }
