@@ -17,41 +17,21 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
-public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ForecastViewHolder>{
+public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ForecastViewHolder> {
 
     Context context;
     ArrayList<String> castTime, castDegrees, castDesc, castIcons;
 
-    @SuppressWarnings("deprecation")
-    @SuppressLint("HandlerLeak")
-    Handler handler = new Handler(){
-
-        @SuppressLint({"SetTextI18n", "NotifyDataSetChanged"})
-        @Override
-        public void handleMessage(@NonNull Message msg) {
-            castTime = msg.getData().getStringArrayList("times");
-            castDegrees = msg.getData().getStringArrayList("degrees");
-            castDesc = msg.getData().getStringArrayList("descriptions");
-            castIcons = msg.getData().getStringArrayList("icons");
-
-            Log.d("FORECAST HANDLER", castTime.get(0));
-            notifyDataSetChanged();
-        }
-    };
-
-    ForecastAdapter(Context context){
+    ForecastAdapter(Context context, ArrayList<String> castTime, ArrayList<String> castDegrees,
+                    ArrayList<String> castDesc, ArrayList<String> castIcons) {
         this.context = context;
-        castTime = new ArrayList<>();
-        castDegrees = new ArrayList<>();
-        castDesc = new ArrayList<>();
-        castIcons = new ArrayList<>();
-
-        String cityName = MainActivity.cityName;
-        ForecastConnector con = new ForecastConnector(handler, cityName);
-        con.start();
+        this.castTime = castTime;
+        this.castDegrees = castDegrees;
+        this.castDesc = castDesc;
+        this.castIcons = castIcons;
     }
 
-    public static class ForecastViewHolder extends RecyclerView.ViewHolder{
+    public static class ForecastViewHolder extends RecyclerView.ViewHolder {
 
         TextView castTime, castDegrees, castDesc;
         ImageView castIcon;
@@ -81,12 +61,11 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.Foreca
 
         String icon = "icon_" + castIcons.get(position);
         int id = context.getResources().getIdentifier(icon, "drawable", context.getPackageName());
-        if(id > 0){
-            if(holder.castIcon != null){
+        if (id > 0) {
+            if (holder.castIcon != null) {
                 holder.castIcon.setImageResource(id);
-            }
-            else{
-                Log.d("HOLDER", String.valueOf(position));
+            } else {
+                Log.d("HOLDER ", "Error on icon: " + position);
             }
         }
     }

@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -18,16 +19,40 @@ import java.util.ArrayList;
 public class ForecastActivity extends AppCompatActivity {
 
     RecyclerView recyclerView;
+    Context context;
+
+    ArrayList<String> castTime, castDegrees, castDesc, castIcons;
+
+    @SuppressWarnings("deprecation")
+    @SuppressLint("HandlerLeak")
+    Handler handler = new Handler(){
+
+        @SuppressLint({"SetTextI18n", "NotifyDataSetChanged"})
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            castTime = msg.getData().getStringArrayList("times");
+            castDegrees = msg.getData().getStringArrayList("degrees");
+            castDesc = msg.getData().getStringArrayList("descriptions");
+            castIcons = msg.getData().getStringArrayList("icons");
+
+            Log.d("FORECAST HANDLER", castTime.get(0));
+
+            recyclerView = findViewById(R.id.my_recycled_view);
+            ForecastAdapter adapter = new ForecastAdapter(context, castTime, castDegrees, castDesc, castIcons);
+
+            recyclerView.setAdapter(adapter);
+            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_forecast);
 
-        recyclerView = findViewById(R.id.my_recycled_view);
-        ForecastAdapter adapter = new ForecastAdapter(this);
-
-        recyclerView.setAdapter(adapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        context = this;
+        String cityName = MainActivity.cityName;
+        ForecastConnector con = new ForecastConnector(handler, cityName);
+        con.start();
     }
 }
