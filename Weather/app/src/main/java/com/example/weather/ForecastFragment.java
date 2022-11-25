@@ -1,25 +1,29 @@
 package com.example.weather;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.widget.ImageView;
-import android.widget.TextView;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import java.util.ArrayList;
 
-public class ForecastActivity extends AppCompatActivity {
+public class ForecastFragment extends Fragment {
 
     RecyclerView recyclerView;
+    @SuppressLint("StaticFieldLeak")
     Context context;
+    View view;
 
     ArrayList<String> castTime, castDegrees, castDesc, castIcons;
 
@@ -37,7 +41,7 @@ public class ForecastActivity extends AppCompatActivity {
 
             Log.d("FORECAST HANDLER", castTime.get(0));
 
-            recyclerView = findViewById(R.id.my_recycled_view);
+            recyclerView = view.findViewById(R.id.frame_recycled_view);
             ForecastAdapter adapter = new ForecastAdapter(context, castTime, castDegrees, castDesc, castIcons);
 
             recyclerView.setAdapter(adapter);
@@ -45,14 +49,20 @@ public class ForecastActivity extends AppCompatActivity {
         }
     };
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_forecast);
+    public ForecastFragment(Context context) {
+        this.context = context;
+    }
 
-        context = this;
-        String cityName = "Ostrava";
-        ForecastConnector con = new ForecastConnector(handler, cityName);
+    public static ForecastFragment newInstance(Context context) {
+        return new ForecastFragment(context);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        view = inflater.inflate(R.layout.fragment_forecast, container, false);
+        ForecastConnector con = new ForecastConnector(handler, CurrentWeatherFragment.cityName);
         con.start();
+        return view;
     }
 }

@@ -41,7 +41,7 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.Foreca
             castTime = itemView.findViewById(R.id.timeText);
             castDegrees = itemView.findViewById(R.id.degreesText);
             castDesc = itemView.findViewById(R.id.descriptionText);
-            castIcon = itemView.findViewById(R.id.iconView);
+            castIcon = itemView.findViewById(R.id.icon_in_row);
         }
     }
 
@@ -60,12 +60,14 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.Foreca
         holder.castDesc.setText(String.valueOf(castDesc.get(position)));
 
         String icon = "icon_" + castIcons.get(position);
+        @SuppressLint("DiscouragedApi")
         int id = context.getResources().getIdentifier(icon, "drawable", context.getPackageName());
         if (id > 0) {
             if (holder.castIcon != null) {
                 holder.castIcon.setImageResource(id);
             } else {
-                Log.d("HOLDER ", "Error on icon: " + position);
+                Log.d("HOLDER ", "Error on icon: " + position
+                );
             }
         }
     }

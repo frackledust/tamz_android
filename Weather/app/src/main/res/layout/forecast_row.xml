@@ -43,7 +43,7 @@
                 android:layout_marginStart="20dp"
                 android:text="@string/degreesRow"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/iconView"
+                app:layout_constraintStart_toEndOf="@id/icon_in_row"
                 app:layout_constraintTop_toTopOf="@+id/guideline3" />
 
             <androidx.constraintlayout.widget.Guideline
@@ -61,11 +61,11 @@
                 android:text="@string/time"
                 android:textSize="20sp"
                 app:layout_constraintBottom_toTopOf="@+id/guideline3"
-                app:layout_constraintStart_toEndOf="@+id/iconView"
+                app:layout_constraintStart_toEndOf="@id/icon_in_row"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <ImageView
-                android:id="@+id/iconView"
+                android:id="@+id/icon_in_row"
                 android:layout_width="62dp"
                 android:layout_height="55dp"
                 android:layout_marginStart="34dp"

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/current_weather"
+        android:enabled="true"
+        android:icon="@drawable/icon_01d"
+        android:title="@string/now" />
+    <item
+        android:id="@+id/forecast"
+        android:enabled="true"
+        android:icon="@drawable/icon_50d"
+        android:title="@string/forecast" />
+</menu>
