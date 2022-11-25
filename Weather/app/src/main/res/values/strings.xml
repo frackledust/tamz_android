@@ -12,4 +12,6 @@
     <string name="temperature">Temperature</string>
     <string name="tempMain">-</string>
     <string name="descMain">-</string>
+    <string name="now">Now</string>
+    <string name="forecast">Forecast</string>
 </resources>

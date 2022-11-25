@@ -2,6 +2,7 @@ package com.example.weather;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -21,20 +22,23 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.Foreca
 
     Context context;
     ArrayList<String> castTime, castDegrees, castDesc, castIcons;
+    Handler handler;
 
-    ForecastAdapter(Context context, ArrayList<String> castTime, ArrayList<String> castDegrees,
+    ForecastAdapter(Context context, Handler handler, ArrayList<String> castTime, ArrayList<String> castDegrees,
                     ArrayList<String> castDesc, ArrayList<String> castIcons) {
         this.context = context;
         this.castTime = castTime;
         this.castDegrees = castDegrees;
         this.castDesc = castDesc;
         this.castIcons = castIcons;
+        this.handler = handler;
     }
 
     public static class ForecastViewHolder extends RecyclerView.ViewHolder {
 
         TextView castTime, castDegrees, castDesc;
         ImageView castIcon;
+        CardView cardView;
 
         public ForecastViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -42,6 +46,7 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.Foreca
             castDegrees = itemView.findViewById(R.id.degreesText);
             castDesc = itemView.findViewById(R.id.descriptionText);
             castIcon = itemView.findViewById(R.id.icon_in_row);
+            cardView = itemView.findViewById(R.id.card_view);
         }
     }
 
@@ -54,7 +59,7 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.Foreca
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ForecastViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ForecastViewHolder holder, @SuppressLint("RecyclerView") int position) {
         holder.castTime.setText(String.valueOf(castTime.get(position)));
         holder.castDegrees.setText(String.valueOf(castDegrees.get(position)));
         holder.castDesc.setText(String.valueOf(castDesc.get(position)));
@@ -70,6 +75,18 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.Foreca
                 );
             }
         }
+
+        holder.cardView.setOnClickListener(v -> {
+            Log.d("CLICK", "Clicked on card: " + position);
+            Bundle b = new Bundle();
+            b.putString("temperature", castDegrees.get(position));
+            b.putString("description", castDesc.get(position));
+            b.putString("icon", castIcons.get(position));
+
+            Message m = handler.obtainMessage();
+            m.setData(b);
+            m.sendToTarget();
+        });
     }
 
     @Override

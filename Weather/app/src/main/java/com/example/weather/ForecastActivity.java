@@ -16,10 +16,13 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+// THIS CLASS NO LONGER WORKING
+
 public class ForecastActivity extends AppCompatActivity {
 
     RecyclerView recyclerView;
     Context context;
+    Handler current_weather_handler;
 
     ArrayList<String> castTime, castDegrees, castDesc, castIcons;
 
@@ -38,7 +41,7 @@ public class ForecastActivity extends AppCompatActivity {
             Log.d("FORECAST HANDLER", castTime.get(0));
 
             recyclerView = findViewById(R.id.my_recycled_view);
-            ForecastAdapter adapter = new ForecastAdapter(context, castTime, castDegrees, castDesc, castIcons);
+            ForecastAdapter adapter = new ForecastAdapter(context, current_weather_handler, castTime, castDegrees, castDesc, castIcons);
 
             recyclerView.setAdapter(adapter);
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
@@ -50,6 +53,7 @@ public class ForecastActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_forecast);
 
+//        this.current_weather_handler = current_weather_handler;
         context = this;
         String cityName = "Ostrava";
         ForecastConnector con = new ForecastConnector(handler, cityName);

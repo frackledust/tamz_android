@@ -3,21 +3,11 @@ package com.example.weather;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.text.Layout;
-import android.util.Log;
-import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.TextView;
 
-import com.google.android.material.bottomnavigation.BottomNavigationItemView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
@@ -25,7 +15,7 @@ public class MainActivity extends AppCompatActivity {
     CurrentWeatherFragment currentWeatherFragment;
     ForecastFragment forecastFragment;
 
-    Button button;
+    static String cityName;
 
     @SuppressLint({"MissingInflatedId", "NonConstantResourceId"})
     @Override
@@ -33,26 +23,45 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        currentWeatherFragment = CurrentWeatherFragment.newInstance("London");
-        forecastFragment = ForecastFragment.newInstance(this);
-        changeFragment(currentWeatherFragment);
+        if (savedInstanceState != null) {
+            cityName = savedInstanceState.getString("CITY_NAME");
+        }
+        else{
+            cityName = "Ostrava";
+        }
 
-        BottomNavigationView bnw = findViewById(R.id.bottom_navigation);
-        bnw.setOnItemSelectedListener(item -> {
-            switch (item.getItemId()) {
-                case R.id.current_weather:
-                    changeFragment(currentWeatherFragment);
-                    break;
-                case R.id.forecast:
-                    changeFragment(forecastFragment);
-                    break;
-            }
-            return true;
-        });
+        currentWeatherFragment = CurrentWeatherFragment.newInstance();
+        forecastFragment = ForecastFragment.newInstance(currentWeatherFragment.handler);
+
+        boolean isLandscape = getResources().getBoolean(R.bool.isLandscape);
+        changeFragment(R.id.fragment_container, currentWeatherFragment);
+
+        if (isLandscape) {
+            changeFragment(R.id.fragment_container2, forecastFragment);
+        } else {
+
+            BottomNavigationView bnw = findViewById(R.id.bottom_navigation);
+            bnw.setOnItemSelectedListener(item -> {
+                switch (item.getItemId()) {
+                    case R.id.current_weather:
+                        changeFragment(R.id.fragment_container, currentWeatherFragment);
+                        break;
+                    case R.id.forecast:
+                        changeFragment(R.id.fragment_container, forecastFragment);
+                        break;
+                }
+                return true;
+            });
+        }
     }
 
-    private void changeFragment(Fragment fragment) {
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString("CITY_NAME", cityName);
+    }
+
+    private void changeFragment(int container, Fragment fragment) {
+        getSupportFragmentManager().beginTransaction().replace(container, fragment).commit();
     }
 
 }

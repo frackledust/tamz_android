@@ -67,7 +67,7 @@ public class Connector extends Thread {
             double temp = mainO.getDouble("temp");
 
             Bundle b = new Bundle();
-            b.putDouble("temperature", temp);
+            b.putString("temperature", temp + " °C");
             b.putString("description", desc);
             b.putString("icon", icon);
 

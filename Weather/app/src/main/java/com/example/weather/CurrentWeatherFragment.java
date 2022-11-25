@@ -2,6 +2,7 @@ package com.example.weather;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -31,54 +32,46 @@ public class CurrentWeatherFragment extends Fragment {
         @SuppressLint("SetTextI18n")
         @Override
         public void handleMessage(@NonNull Message msg) {
-            Double temperature = msg.getData().getDouble("temperature", 0);
+            String temperature = msg.getData().getString("temperature", "0 °C");
             String description = msg.getData().getString("description", "");
             String icon = msg.getData().getString("icon", "");
             icon = "icon_" + icon;
 
-            View current_view = getView();
 
-            assert current_view != null;
-            TextView tempView = current_view.findViewById(R.id.tempText);
-            TextView descView = current_view.findViewById(R.id.descText);
-            ImageView iconView = current_view.findViewById(R.id.current_weather_icon);
+            TextView tempView = view.findViewById(R.id.tempText);
+            TextView descView = view.findViewById(R.id.descText);
+            ImageView iconView = view.findViewById(R.id.current_weather_icon);
 
-            tempView.setText(temperature + " °C");
+            tempView.setText(temperature);
             descView.setText(description);
 
-            Activity current_activity = getActivity();
-
-            assert current_activity != null;
             @SuppressLint("DiscouragedApi")
-            int id = getResources().getIdentifier(icon, "drawable", current_activity.getPackageName());
+            int id = mContext.getResources().getIdentifier(icon, "drawable", mContext.getPackageName());
             iconView.setImageResource(id);
         }
     };
 
+    Context mContext;
     View view;
-
-    public static String cityName;
 
     public CurrentWeatherFragment() {
         // Required empty public constructor
     }
 
-    public static CurrentWeatherFragment newInstance(String cityName) {
-        CurrentWeatherFragment fragment = new CurrentWeatherFragment();
-        Bundle args = new Bundle();
-        args.putString("CITY_NAME", cityName);
-        fragment.setArguments(args);
-        return fragment;
+    public static CurrentWeatherFragment newInstance() {
+        return new CurrentWeatherFragment();
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        mContext = context;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            cityName = getArguments().getString("CITY_NAME");
-        }
-
-        Connector con = new Connector(handler, cityName);
+        Connector con = new Connector(handler, MainActivity.cityName);
         con.start();
     }
 
@@ -88,7 +81,7 @@ public class CurrentWeatherFragment extends Fragment {
         view = inflater.inflate(R.layout.fragment_current_weather, container, false);
 
         TextView tw = view.findViewById(R.id.cityTextBox);
-        tw.setText(cityName);
+        tw.setText(MainActivity.cityName);
 
         Button button = view.findViewById(R.id.changeCityButton);
         button.setOnClickListener(this::changeCity);
@@ -99,8 +92,8 @@ public class CurrentWeatherFragment extends Fragment {
         TextView tw = this.view.findViewById(R.id.cityTextBox);
         String city = String.valueOf(tw.getText());
         if(city.length() > 0){
-            cityName = city;
-            Connector con = new Connector(handler, cityName);
+            MainActivity.cityName = city;
+            Connector con = new Connector(handler, MainActivity.cityName);
             con.start();
         }
     }
