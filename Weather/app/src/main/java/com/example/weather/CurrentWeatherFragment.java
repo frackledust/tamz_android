@@ -53,6 +53,7 @@ public class CurrentWeatherFragment extends Fragment {
 
     Context mContext;
     View view;
+    Handler forecast_handler = null;
 
     public CurrentWeatherFragment() {
         // Required empty public constructor
@@ -95,6 +96,18 @@ public class CurrentWeatherFragment extends Fragment {
             MainActivity.cityName = city;
             Connector con = new Connector(handler, MainActivity.cityName);
             con.start();
+
+            boolean isLandscape = mContext.getResources().getBoolean(R.bool.isLandscape);
+            if(forecast_handler != null){
+                if(isLandscape){
+                    ForecastConnector con2 = new ForecastConnector(forecast_handler, MainActivity.cityName);
+                    con2.start();
+                }
+            }
         }
+    }
+
+    public void addForecastHandler(Handler handler) {
+        forecast_handler = handler;
     }
 }

@@ -32,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
 
         currentWeatherFragment = CurrentWeatherFragment.newInstance();
         forecastFragment = ForecastFragment.newInstance(currentWeatherFragment.handler);
+        currentWeatherFragment.addForecastHandler(forecastFragment.handler);
 
         boolean isLandscape = getResources().getBoolean(R.bool.isLandscape);
         changeFragment(R.id.fragment_container, currentWeatherFragment);
